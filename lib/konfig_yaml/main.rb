@@ -8,11 +8,22 @@ require 'pathname'
 class KonfigYaml
   include HashWrapper
 
-  def initialize(name = 'app', opts = {})
-    env = ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
-    dir_path = Pathname(Dir.pwd).join(opts[:path] || 'config')
-    use_cache = opts[:use_cache]
-    use_cache = true if use_cache.nil?
+  # @param [String] name ('app') the basename of yaml file
+  # @param [Hash] opts the options to intialize
+  # @option opts [String] :env (ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development') run environment
+  # @option opts [String] :path ('config') directory path that contains the yaml file
+  # @option opts [Boolean] :use_cache (true) whether cache settings or not
+  def initialize(name = 'app', opts = nil)
+    if name.is_a?(Hash) && opts.nil?
+      opts = name
+      name = 'app'
+    elsif opts.nil?
+      opts = {}
+    end
+
+    env = opts[:env] || ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
+    env = env.to_s
+    use_cache = opts.fetch(:use_cache, true)
 
     cfg_key = "#{name}/#{env}"
     if use_cache && cfg_cache.key?(cfg_key)
@@ -21,6 +32,7 @@ class KonfigYaml
       return
     end
 
+    dir_path = File.expand_path(opts[:path] || 'config', Dir.pwd)
     cfg = load_file(name, dir_path);
     if cfg.include?(env)
       @h = deep_merge(cfg[env], cfg['default']);
@@ -28,9 +40,8 @@ class KonfigYaml
       @h = cfg['default']
     end
 
-    if !@h
-      throw new Error("The configuration for #{env} is not defined in #{name}");
-    end
+    raise ArgumentError.new("The configuration for #{env} is not defined in #{name}") unless @h
+
     cfg_cache[cfg_key] = @h
 
     activate
@@ -48,7 +59,7 @@ class KonfigYaml
 
   def load_file(name, dir)
     cfg_path = Dir.glob("#{dir}/#{name}.{yml,yaml}").first
-    raise 'Not found configuration yaml file' unless cfg_path
+    raise ArgumentError.new("Not found configuration yaml file") unless cfg_path
     YAML.load(File.read(cfg_path))
   end
 
