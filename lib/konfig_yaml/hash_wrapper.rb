@@ -62,8 +62,7 @@ class KonfigYaml
     end
 
     def to_h(opts = {})
-      symbolize = opts[:symbolize_names]
-      symbolize = true if symbolize.nil?
+      symbolize = opts.fetch(:symbolize_names, true)
 
       t = {}
       @h.each do |name, val|

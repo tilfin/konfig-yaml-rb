@@ -1,0 +1,19 @@
+default:
+  logger:
+    level: info
+  short_env: default
+
+development:
+  logger:
+    level: debug
+  short_env: dev
+
+empty_env:
+
+staging:
+  short_env: stg
+
+production:
+  short_env: prd
+  logger:
+    level: error
