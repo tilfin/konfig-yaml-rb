@@ -50,25 +50,29 @@ class KonfigYaml
       return
     end
 
-    cfg = load_file(name, path);
-    if cfg.include?(env)
-      @h = deep_merge(cfg[env], cfg['default']);
-    else
-      @h = cfg['default']
-    end
-    raise ArgumentError.new("The configuration for #{env} is not defined in #{name}") unless @h
+    data = load_yaml(name, path)
+    convert_data_to_h(data, env)
+
     cfg_cache[cfg_key] = @h
   end
 
-  def load_file(name, dir)
-    cfg_path = Dir.glob("#{dir}/#{name}.{yml,yaml}").first
-    raise ArgumentError.new("Not found configuration yaml file") unless cfg_path
-    YAML.load(File.read(cfg_path))
+  def load_yaml(name, dir)
+    file_path = Dir.glob("#{dir}/#{name}.{yml,yaml}").first
+    raise ArgumentError.new("Not found configuration yaml file") unless file_path
+    YAML.load(File.read(file_path))
+  end
+
+  def convert_data_to_h(data, env)
+    if data.include?(env)
+      @h = deep_merge(data[env] || {}, data['default'] || {})
+    elsif data.include?('default')
+      @h = data['default']
+    else
+      raise ArgumentError.new("The configuration for #{env} is not defined in #{name}")
+    end
   end
 
   def deep_merge(target, default)
-    target ||= {}
-    default ||= {}
     target.merge!(default) do |key, target_val, default_val|
       if target_val.is_a?(Hash) && default_val.is_a?(Hash)
         deep_merge(target_val, default_val)

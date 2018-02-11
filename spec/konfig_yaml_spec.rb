@@ -125,29 +125,29 @@ describe KonfigYaml do
       let!(:pre_instance) { described_class.new }
 
       before do
-        allow_any_instance_of(described_class).to receive(:load_file).and_raise('load_file called')
+        allow_any_instance_of(described_class).to receive(:load_yaml).and_raise('load_yaml called')
       end
 
       context 'not specified' do
         subject { described_class.new }
 
-        it 'loads cached instance without calling load_file' do
-          expect{ subject }.not_to raise_error 'load_file called'
+        it 'loads cached instance without calling load_yaml' do
+          expect{ subject }.not_to raise_error 'load_yaml called'
         end
       end
 
       context 'true' do
         subject { described_class.new(use_cache: true) }
 
-        it 'loads cached instance without calling load_file' do
-          expect{ subject }.not_to raise_error 'load_file called'
+        it 'loads cached instance without calling load_yaml' do
+          expect{ subject }.not_to raise_error 'load_yaml called'
         end
 
         context 'after cache cleared' do
           before { described_class.clear }
 
-          it 'loads new instance with calling load_file' do
-            expect{ subject }.to raise_error 'load_file called'
+          it 'loads new instance with calling load_yaml' do
+            expect{ subject }.to raise_error 'load_yaml called'
           end
         end
       end
@@ -155,8 +155,8 @@ describe KonfigYaml do
       context 'false' do
         subject { described_class.new(use_cache: false) }
 
-        it 'loads new instance with calling load_file' do
-          expect{ subject }.to raise_error 'load_file called'
+        it 'loads new instance with calling load_yaml' do
+          expect{ subject }.to raise_error 'load_yaml called'
         end
       end
     end
