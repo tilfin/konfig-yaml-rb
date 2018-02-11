@@ -1,5 +1,10 @@
 # konfig-yaml for Ruby
 
+[![Gem Version](https://badge.fury.io/rb/konfig-yaml.svg)](https://badge.fury.io/rb/konfig-yaml)
+[![Build Status](https://travis-ci.org/tilfin/konfig-yaml-rb.svg?branch=master)](https://travis-ci.org/tilfin/konfig-yaml-rb)
+[![Code Climate](https://codeclimate.com/github/tilfin/konfig-yaml-rb/badges/gpa.svg)](https://codeclimate.com/github/tilfin/konfig-yaml-rb)
+[![Test Coverage](https://codeclimate.com/github/tilfin/konfig-yaml-rb/badges/coverage.svg)](https://codeclimate.com/github/tilfin/konfig-yaml-rb/coverage)
+
 The loader of yaml base configuration for each run enviroments like [settingslogic](https://github.com/settingslogic/settingslogic).
 
 - Expand environment variables (ex. `users-${NODE_ENV}`)
