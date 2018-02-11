@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Toshimitsu Takahashi"]
   spec.email         = ["toshi@tilfin.com"]
 
-  spec.summary       = %q{Yaml file SettingsLogic.}
-  spec.description   = %q{Write a longer description or delete this line.}
+  spec.summary       = %q{Loader for yaml base configuration with ENVs.}
+  spec.description   = %q{The loader of yaml base configuration for each run enviroments.}
   spec.homepage      = "https://github.com/tilfin/konfig-yaml-rb"
   spec.license       = "MIT"
 
