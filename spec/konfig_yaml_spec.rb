@@ -4,6 +4,12 @@ require 'yaml'
 describe KonfigYaml do
   describe '#initialize' do
     describe 'option name, env' do
+      before do
+        ENV['RUBY_ENV'] = nil
+        ENV['RAILS_ENV'] = nil
+        ENV['RACK_ENV'] = nil
+      end
+
       subject { described_class.new('another') }
 
       it 'not specified' do
