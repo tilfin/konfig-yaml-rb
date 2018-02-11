@@ -1,0 +1,19 @@
+default:
+  port: 8080
+  logger:
+    level: info
+    dev:
+      de: stdout
+  db:
+    name: ${BRAND}-app-${RUBY_ENV:-development}
+    user: user
+    pass: pass
+
+production:
+  port: 1080
+  logger:
+    level: error
+    output:
+      file: temp.log
+  db:
+    pass: Password
