@@ -7,7 +7,7 @@
 
 The loader of yaml base configuration for each run enviroments like [settingslogic](https://github.com/settingslogic/settingslogic).
 
-- Expand environment variables (ex. `users-${NODE_ENV}`)
+- Expand environment variables (ex. `users-${RUBY_ENV}`)
 - Deep merge the environment settings and default settings (except array items)
 - Ruby version of [konfig-yaml](https://github.com/tilfin/konfig-yaml)
 
@@ -59,7 +59,7 @@ default:
   logger:
     level: info
   db:
-    name: ${BRAND}-app-${NODE_ENV}
+    name: ${BRAND:-normal}-app-${RUBY_ENV}
     user: user
     pass: pass
 
@@ -90,7 +90,7 @@ puts config['db'].password
 #### In development
 
 ```
-$ RUBY_ENV=development BRAND=normal ruby main.rb
+$ RUBY_ENV=development ruby main.rb
 8080
 info
 normal-app-development
