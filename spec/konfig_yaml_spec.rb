@@ -162,59 +162,230 @@ describe KonfigYaml do
     end
   end
 
-  describe 'accessors' do
-    subject { described_class.new('app', path: 'config') }
+  describe 'merged configuraton' do
+    subject { described_class.new('app', path: 'config', env: env) }
 
-    it 'an instance that has accessors by method' do
-      expect(subject.port).to eq(8080)
-      expect(subject.logger.level).to eq('info')
-      expect(subject.db.name).to eq('-app-development')
+    context 'environment is development' do
+      let!(:env) { 'development' }
+
+      it 'an instance that has accessors by method' do
+        expect(subject.port).to eq(1080)
+        expect(subject.db.host).to eq('localhost')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('http://localhost')
+        expect(subject.logger.level).to eq('debug')
+        expect(subject.logger.file).to eq('log/app.log')
+        expect{ subject.bucket }.to raise_error(NoMethodError)
+        expect{ subject.bucket_path }.to raise_error(NoMethodError)
+        expect{ subject.cloud_access_key }.to raise_error(NoMethodError)
+        expect(subject[:cloud_access_key]).to be_nil
+        expect(subject.access_limits).to eq ['127.0.0.1']
+      end
     end
 
-    it 'an instance that has accessors by symbol' do
-      expect(subject[:port]).to eq(8080)
-      expect(subject[:logger][:level]).to eq('info')
+    context 'environment is test' do
+      let!(:env) { 'test' }
+
+      it 'an instance that has accessors by method' do
+        expect(subject.port).to eq(1080)
+        expect(subject.db.host).to eq('localhost')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('http://localhost')
+        expect(subject.logger.level).to eq('error')
+        expect(subject.logger.file).to eq('log/test.log')
+        expect{ subject.bucket }.to raise_error(NoMethodError)
+        expect{ subject.bucket_path }.to raise_error(NoMethodError)
+        expect{ subject.cloud_access_key }.to raise_error(NoMethodError)
+        expect(subject['cloud_access_key']).to be_nil
+        expect(subject.access_limits).to eq ['127.0.0.1']
+      end
+
+      context 'defined environment variables' do
+        before do
+          ENV['RUBY_ENV'] = 'test'
+        end
+
+        after do
+          ENV['RUBY_ENV'] = nil
+        end
+
+        it 'expands environment variables' do
+          expect(subject.db.host).to eq('localhost')
+          expect(subject.db.name).to eq('service-test')
+          expect(subject.db.user).to eq('user')
+          expect(subject.db.pass).to eq('password')
+        end
+      end
     end
 
-    it 'an instance that has accessors by string' do
-      expect(subject['port']).to eq(8080)
-      expect(subject['logger']['level']).to eq('info')
+    context 'environment is integration' do
+      let!(:env) { 'integration' }
+
+      it 'an instance that has accessors by method' do
+        expect(subject.port).to eq(1080)
+        expect(subject.db.host).to eq('')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('https://api-itg.example.com')
+        expect(subject.logger.level).to eq('info')
+        expect(subject.logger[:file]).to be_nil
+        expect(subject.bucket).to eq('storage-service-stg')
+        expect(subject.bucket_path).to eq('/itg')
+        expect(subject.cloud_access_key).to eq('aaabbbccc')
+        expect(subject.access_limits).to eq ['192.168.0.0/24', '10.0.0.0/8']
+      end
+
+      context 'defined environment variables' do
+        before do
+          ENV['RUBY_ENV'] = 'integration'
+          ENV['DATABASE_HOST'] = 'db-itg.example.com'
+          ENV['DATABASE_USER'] = 'itg_user'
+          ENV['DATABASE_PASSWORD'] = 'PassworD'
+        end
+
+        after do
+          ENV['RUBY_ENV'] = nil
+          ENV['DATABASE_HOST'] = nil
+          ENV['DATABASE_USER'] = nil
+          ENV['DATABASE_PASSWORD'] = nil
+        end
+
+        it 'expands environment variables' do
+          expect(subject.db.host).to eq('db-itg.example.com')
+          expect(subject.db.name).to eq('service-integration')
+          expect(subject.db.user).to eq('itg_user')
+          expect(subject.db.pass).to eq('PassworD')
+        end
+      end
     end
 
-    it 'an instance that has accessors by various ways' do
-      expect(subject.logger[:level]).to eq('info')
-      expect(subject.logger['level']).to eq('info')
-      expect(subject[:logger].level).to eq('info')
-      expect(subject[:logger]['level']).to eq('info')
-      expect(subject['logger'].level).to eq('info')
-      expect(subject['logger'][:level]).to eq('info')
+    context 'environment is staging' do
+      let!(:env) { 'staging' }
+
+      it 'an instance that has accessors by method' do
+        expect(subject.port).to eq(1080)
+        expect(subject.db.host).to eq('')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('https://api-stg.example.com')
+        expect(subject.logger.level).to eq('info')
+        expect(subject.logger['file']).to be_nil
+        expect(subject.bucket).to eq('storage-service-stg')
+        expect(subject.bucket_path).to eq('/stg')
+        expect(subject.cloud_access_key).to eq('aaabbbccc')
+        expect(subject.access_limits).to eq ['192.168.0.0/24', '10.0.0.0/8']
+      end
+
+      context 'defined environment variables' do
+        before do
+          ENV['RUBY_ENV'] = 'staging'
+          ENV['DATABASE_HOST'] = 'db-stg.example.com'
+          ENV['DATABASE_USER'] = 'stg_user'
+          ENV['DATABASE_PASSWORD'] = 'PassworD'
+        end
+
+        after do
+          ENV['RUBY_ENV'] = nil
+          ENV['DATABASE_HOST'] = nil
+          ENV['DATABASE_USER'] = nil
+          ENV['DATABASE_PASSWORD'] = nil
+        end
+
+        it 'expands environment variables' do
+          expect(subject.db.host).to eq('db-stg.example.com')
+          expect(subject.db.name).to eq('service-staging')
+          expect(subject.db.user).to eq('stg_user')
+          expect(subject.db.pass).to eq('PassworD')
+        end
+      end
     end
 
-    context 'defined BRAND' do
-      before { ENV['BRAND'] = 'awesome' }
-      after { ENV['BRAND'] = nil }
+    context 'environment is preproduction' do
+      let!(:env) { 'preproduction' }
 
-      it 'expands undefined ENV value as default' do
-        expect(subject.db.name).to eq('awesome-app-development')
+      it 'an instance that has accessors by method' do
+        expect(subject.port).to eq(1080)
+        expect(subject.db.host).to eq('')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('https://api-pre.example.com')
+        expect(subject.logger.level).to eq('warn')
+        expect(subject.logger[:file]).to be_nil
+        expect(subject.bucket).to eq('storage-service-stg')
+        expect(subject.bucket_path).to eq('/pre')
+        expect(subject.cloud_access_key).to eq('aaabbbccc')
+        expect(subject.access_limits).to eq ['192.168.0.0/24', '10.0.0.0/8']
+      end
+
+      context 'defined environment variables' do
+        before do
+          ENV['RUBY_ENV'] = 'preproduction'
+          ENV['DATABASE_HOST'] = 'db-prod.example.com'
+          ENV['DATABASE_USER'] = 'preprod_user'
+          ENV['DATABASE_PASSWORD'] = '4s5gsUoP'
+        end
+
+        after do
+          ENV['RUBY_ENV'] = nil
+          ENV['DATABASE_HOST'] = nil
+          ENV['DATABASE_USER'] = nil
+          ENV['DATABASE_PASSWORD'] = nil
+        end
+
+        it 'expands environment variables' do
+          expect(subject.db.host).to eq('db-prod.example.com')
+          expect(subject.db.name).to eq('service-preproduction')
+          expect(subject.db.user).to eq('preprod_user')
+          expect(subject.db.pass).to eq('4s5gsUoP')
+        end
       end
     end
 
     context 'environment is production' do
-      before { ENV['RUBY_ENV'] = 'production' }
-      after { ENV['RUBY_ENV'] = nil }
+      let!(:env) { 'production' }
 
-      it 'an instance that provides the values overwritten by values of production:' do
+      it 'an instance that has accessors by method' do
         expect(subject.port).to eq(1080)
-        expect(subject[:logger]['level']).to eq('error')
-        expect(subject.db.name).to eq('-app-production')
+        expect(subject.db.host).to eq('')
+        expect(subject.db.name).to eq('service-development')
+        expect(subject.db.user).to eq('user')
+        expect(subject.db.pass).to eq('password')
+        expect(subject.root_url).to eq('https://api.example.com')
+        expect(subject.logger.level).to eq('error')
+        expect(subject.logger['file']).to be_nil
+        expect(subject.bucket).to eq('storage-service')
+        expect(subject.bucket_path).to eq('/')
+        expect(subject.cloud_access_key).to eq('xxxyyyzzz')
+        expect(subject.access_limits).to be_nil
       end
 
-      context 'defined BRAND' do
-        before { ENV['BRAND'] = 'brand' }
-        after { ENV['BRAND'] = nil }
+      context 'defined environment variables' do
+        before do
+          ENV['RUBY_ENV'] = 'production'
+          ENV['DATABASE_HOST'] = 'db-prod.example.com'
+          ENV['DATABASE_USER'] = 'prod_user'
+          ENV['DATABASE_PASSWORD'] = '3kszdf4aR'
+        end
 
-        it 'expands defined ENV value' do
-          expect(subject.db.name).to eq('brand-app-production')
+        after do
+          ENV['RUBY_ENV'] = nil
+          ENV['DATABASE_HOST'] = nil
+          ENV['DATABASE_USER'] = nil
+          ENV['DATABASE_PASSWORD'] = nil
+        end
+
+        it 'expands environment variables' do
+          expect(subject.db.host).to eq('db-prod.example.com')
+          expect(subject.db.name).to eq('service-production')
+          expect(subject.db.user).to eq('prod_user')
+          expect(subject.db.pass).to eq('3kszdf4aR')
         end
       end
     end

@@ -1,13 +1,15 @@
 require 'pathname'
+require 'neohash'
 
 # KonfigYaml main class
 class KonfigYaml
-  include HashWrapper
+  include NeoHash::Support
+
   # Create an configuration from yaml file
   #
   # @param [String] name ('app') the basename of yaml file
   # @param [Hash] opts the options to intialize
-  # @option opts [String] :env (ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development') run environment
+  # @option opts [String] :env (ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development') execution environment
   # @option opts [String] :path ('config') directory path that contains the yaml file
   # @option opts [Boolean] :use_cache (true) whether cache settings or not
   def initialize(name = 'app', opts = nil)
@@ -22,8 +24,8 @@ class KonfigYaml
     env = environment(opts)
     use_cache = opts.fetch(:use_cache, true)
 
-    load_config(name, env, path, use_cache)
-    activate
+    h = load_config(name, env, path, use_cache)
+    set_inner_hash(dup_hash_expand_envs(h))
   end
 
   # Clear caches
@@ -46,14 +48,11 @@ class KonfigYaml
   def load_config(name, env, path, use_cache)
     cfg_key = "#{name}/#{env}"
     if use_cache && cfg_cache.key?(cfg_key)
-      @h = cfg_cache[cfg_key]
-      return
+      return cfg_cache[cfg_key]
     end
 
     data = load_yaml(name, path)
-    convert_data_to_h(data, env)
-
-    cfg_cache[cfg_key] = @h
+    cfg_cache[cfg_key] = convert_data_to_hash(data, env)
   end
 
   def load_yaml(name, dir)
@@ -62,23 +61,58 @@ class KonfigYaml
     YAML.load(File.read(file_path))
   end
 
-  def convert_data_to_h(data, env)
+  def convert_data_to_hash(data, env)
     if data.include?(env)
-      @h = deep_merge(data[env] || {}, data['default'] || {})
+      deep_merge(data[env] || {}, data['default'] || {})
     elsif data.include?('default')
-      @h = data['default']
+      data['default']
     else
       raise ArgumentError.new("The configuration for #{env} is not defined in #{name}")
     end
   end
 
   def deep_merge(target, default)
-    target.merge!(default) do |key, target_val, default_val|
+    target.merge(default) do |key, target_val, default_val|
       if target_val.is_a?(Hash) && default_val.is_a?(Hash)
         deep_merge(target_val, default_val)
       else
         target_val
       end
+    end
+  end
+
+  def dup_hash_expand_envs(root)
+    root.map do |name, val|
+      if val.is_a?(Hash)
+        [name, dup_hash_expand_envs(val)]
+      elsif val.is_a?(Array)
+        [name, dup_array_expand_envs(val)]
+      elsif val.is_a?(String)
+        [name, expand_envs(val)]
+      else
+        [name, val]
+      end
+    end.to_h
+  end
+
+  def dup_array_expand_envs(root)
+    root.map do |val|
+      if val.is_a?(Hash)
+        dup_hash_expand_envs(val)
+      elsif val.is_a?(Array)
+        dup_array_expand_envs(val)
+      elsif val.is_a?(String)
+        expand_envs(val)
+      else
+        val
+      end
+    end
+  end
+
+  def expand_envs(str)
+    str.gsub(/\$\{(.+?)\}/) do |m|
+      env_key, default = $1.split(/:\-?/)
+      ENV[env_key] || default || ''
     end
   end
 end

@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Toshimitsu Takahashi"]
   spec.email         = ["toshi@tilfin.com"]
 
-  spec.summary       = %q{Loader for yaml base configuration with ENVs.}
-  spec.description   = %q{The loader of yaml base configuration for each run enviroments.}
+  spec.summary       = %q{Loader for YAML configuration with ENVs.}
+  spec.description   = %q{The loader of YAML configuration for each execution environments.}
   spec.homepage      = "https://github.com/tilfin/konfig-yaml-rb"
   spec.license       = "MIT"
 
@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = Dir['spec/**/*']
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "neohash", "~> 0.1"
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
