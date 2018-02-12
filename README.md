@@ -5,10 +5,13 @@
 [![Code Climate](https://codeclimate.com/github/tilfin/konfig-yaml-rb/badges/gpa.svg)](https://codeclimate.com/github/tilfin/konfig-yaml-rb)
 [![Test Coverage](https://codeclimate.com/github/tilfin/konfig-yaml-rb/badges/coverage.svg)](https://codeclimate.com/github/tilfin/konfig-yaml-rb/coverage)
 
-The loader of yaml base configuration for each run enviroments like [settingslogic](https://github.com/settingslogic/settingslogic).
+The loader of YAML configuration for each execution environments like [settingslogic](https://github.com/settingslogic/settingslogic).
 
-- Expand environment variables (ex. `users-${RUBY_ENV}`)
+- Expand environment variables like bash (ex. `storage-${RUBY_ENV}`)
+    - If an environment variable is not set, it is to be emtpy string.
+    - If `${DB_USER:-user}` or `${DB_USER:user}` is defined, `user` is expanded unless DB_USER does not exists.
 - Deep merge the environment settings and default settings (except array items)
+- Support YAML Anchor `&something` / Reference `<<: *something`
 - Ruby version of [konfig-yaml](https://github.com/tilfin/konfig-yaml)
 
 ## Installation
@@ -29,7 +32,9 @@ Or install it yourself as:
 
 ## Usage
 
-```
+### Load a configuration
+
+```ruby
 require 'konfig-yaml'
 
 config = KonfigYaml.new([name], [opts]);
@@ -38,10 +43,50 @@ config = KonfigYaml.new([name], [opts]);
 * `name` specifys the name of `config/<name>.yml` ( default `app` )
 * `opts`
   * `:path` config directory path resolved from the process current one ( default `config` )
-  * `:env` Run environment ( default **RUBY_ENV** value, **RAILS_ENV** value, **RACK_ENV** value, or `development` )
+  * `:env` Execution environment ( default **RUBY_ENV** value, **RAILS_ENV** value, **RACK_ENV** value, or `development` )
   * `:use_cache` whether using cache ( default `true` )
 
-#### Clear cache
+### Access the values
+
+#### by accessor method
+
+```ruby
+port = config.port
+log_lv = config.log.level
+```
+
+#### by symbol key
+
+```ruby
+port = config[:port]
+log_lv = config.log[:level]
+```
+
+#### by string key
+
+```ruby
+port = config['port']
+log_lv = config['log'].level
+```
+
+### Dynamically change settings
+
+Support only symbol or string
+
+```ruby
+config[:port] = 80
+config.log['level'] = 'fatal'
+config[:backend] = { host: 'cms.example.com', "port" => 7080 }
+
+p config.port         # 80
+p config.log.level    # "fatal"
+p config.backend.host # "cms.example.com"
+p config.backend.port # 7080
+```
+
+### Clear caches
+
+For testing purpose
 
 ```
 KonfigYaml.clear
@@ -56,7 +101,7 @@ KonfigYaml.clear
 ```
 default:
   port: 8080
-  logger:
+  log:
     level: info
   db:
     name: ${BRAND:-normal}-app-${RUBY_ENV}
@@ -65,7 +110,7 @@ default:
 
 production:
   port: 1080
-  logger:
+  log:
     level: error
   db:
     pass: Password
@@ -79,7 +124,7 @@ require 'konfig-yaml'
 config = KonfigYaml.new
 
 puts config.port
-puts config.logger.level
+puts config.log.level
 puts config.db.user
 puts config[:db]['name']
 puts config['db'].password

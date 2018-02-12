@@ -1,19 +1,58 @@
 default:
-  port: 8080
-  logger:
-    level: info
-    dev:
-      de: stdout
-  db:
-    name: ${BRAND}-app-${RUBY_ENV:-development}
-    user: user
-    pass: pass
-
-production:
   port: 1080
+  db:
+    host: localhost
+    name: service-${RUBY_ENV:development}
+    user: ${DATABASE_USER:-user}
+    pass: ${DATABASE_PASSWORD:-password}
+  logger:
+    level: debug
+  access_limits:
+    - 127.0.0.1
+
+development: &dev
+  root_url: http://localhost
+  logger:
+    file: log/app.log
+
+test:
+  <<: *dev
   logger:
     level: error
-    output:
-      file: temp.log
+    file: log/test.log
+
+integration: &deployments
+  root_url: https://api-itg.example.com
   db:
-    pass: Password
+    host: ${DATABASE_HOST}
+  logger:
+    level: info
+  bucket: storage-service-stg
+  bucket_path: /itg
+  cloud_access_key: aaabbbccc
+  access_limits:
+    - 192.168.0.0/24
+    - 10.0.0.0/8
+
+staging:
+  <<: *deployments
+  root_url: https://api-stg.example.com
+  bucket_path: /stg
+
+preproduction:
+  <<: *deployments
+  root_url: https://api-pre.example.com
+  logger:
+    level: warn
+  bucket_path: /pre
+
+production:
+  root_url: https://api.example.com
+  db:
+    host: ${DATABASE_HOST}
+  logger:
+    level: error
+  bucket: storage-service
+  bucket_path: /
+  cloud_access_key: xxxyyyzzz
+  access_limits:
