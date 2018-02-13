@@ -5,19 +5,19 @@ default:
     name: service-${RUBY_ENV:development}
     user: ${DATABASE_USER:-user}
     pass: ${DATABASE_PASSWORD:-password}
-  logger:
+  log:
     level: debug
   access_limits:
     - 127.0.0.1
 
 development: &dev
   root_url: http://localhost
-  logger:
+  log:
     file: log/app.log
 
 test:
   <<: *dev
-  logger:
+  log:
     level: error
     file: log/test.log
 
@@ -25,7 +25,7 @@ integration: &deployments
   root_url: https://api-itg.example.com
   db:
     host: ${DATABASE_HOST}
-  logger:
+  log:
     level: info
   bucket: storage-service-stg
   bucket_path: /itg
@@ -42,7 +42,7 @@ staging:
 preproduction:
   <<: *deployments
   root_url: https://api-pre.example.com
-  logger:
+  log:
     level: warn
   bucket_path: /pre
 
@@ -50,7 +50,7 @@ production:
   root_url: https://api.example.com
   db:
     host: ${DATABASE_HOST}
-  logger:
+  log:
     level: error
   bucket: storage-service
   bucket_path: /

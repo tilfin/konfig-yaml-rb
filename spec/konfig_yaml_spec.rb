@@ -125,7 +125,7 @@ describe KonfigYaml do
       let!(:pre_instance) { described_class.new }
 
       before do
-        allow_any_instance_of(described_class).to receive(:load_yaml).and_raise('load_yaml called')
+        allow(described_class).to receive(:load_yaml).and_raise('load_yaml called')
       end
 
       context 'not specified' do
@@ -175,8 +175,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('http://localhost')
-        expect(subject.logger.level).to eq('debug')
-        expect(subject.logger.file).to eq('log/app.log')
+        expect(subject.log.level).to eq('debug')
+        expect(subject.log.file).to eq('log/app.log')
         expect{ subject.bucket }.to raise_error(NoMethodError)
         expect{ subject.bucket_path }.to raise_error(NoMethodError)
         expect{ subject.cloud_access_key }.to raise_error(NoMethodError)
@@ -195,8 +195,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('http://localhost')
-        expect(subject.logger.level).to eq('error')
-        expect(subject.logger.file).to eq('log/test.log')
+        expect(subject.log.level).to eq('error')
+        expect(subject.log.file).to eq('log/test.log')
         expect{ subject.bucket }.to raise_error(NoMethodError)
         expect{ subject.bucket_path }.to raise_error(NoMethodError)
         expect{ subject.cloud_access_key }.to raise_error(NoMethodError)
@@ -232,8 +232,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('https://api-itg.example.com')
-        expect(subject.logger.level).to eq('info')
-        expect(subject.logger[:file]).to be_nil
+        expect(subject.log.level).to eq('info')
+        expect(subject.log[:file]).to be_nil
         expect(subject.bucket).to eq('storage-service-stg')
         expect(subject.bucket_path).to eq('/itg')
         expect(subject.cloud_access_key).to eq('aaabbbccc')
@@ -274,8 +274,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('https://api-stg.example.com')
-        expect(subject.logger.level).to eq('info')
-        expect(subject.logger['file']).to be_nil
+        expect(subject.log.level).to eq('info')
+        expect(subject.log['file']).to be_nil
         expect(subject.bucket).to eq('storage-service-stg')
         expect(subject.bucket_path).to eq('/stg')
         expect(subject.cloud_access_key).to eq('aaabbbccc')
@@ -316,8 +316,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('https://api-pre.example.com')
-        expect(subject.logger.level).to eq('warn')
-        expect(subject.logger[:file]).to be_nil
+        expect(subject.log.level).to eq('warn')
+        expect(subject.log[:file]).to be_nil
         expect(subject.bucket).to eq('storage-service-stg')
         expect(subject.bucket_path).to eq('/pre')
         expect(subject.cloud_access_key).to eq('aaabbbccc')
@@ -358,8 +358,8 @@ describe KonfigYaml do
         expect(subject.db.user).to eq('user')
         expect(subject.db.pass).to eq('password')
         expect(subject.root_url).to eq('https://api.example.com')
-        expect(subject.logger.level).to eq('error')
-        expect(subject.logger['file']).to be_nil
+        expect(subject.log.level).to eq('error')
+        expect(subject.log['file']).to be_nil
         expect(subject.bucket).to eq('storage-service')
         expect(subject.bucket_path).to eq('/')
         expect(subject.cloud_access_key).to eq('xxxyyyzzz')

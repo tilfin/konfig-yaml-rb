@@ -32,7 +32,7 @@ Or install it yourself as:
 
 ## Usage
 
-### Load a configuration
+### Load a configuration instance
 
 ```ruby
 require 'konfig-yaml'
@@ -45,6 +45,18 @@ config = KonfigYaml.new([name], [opts]);
   * `:path` config directory path resolved from the process current one ( default `config` )
   * `:env` Execution environment ( default **RUBY_ENV** value, **RAILS_ENV** value, **RACK_ENV** value, or `development` )
   * `:use_cache` whether using cache ( default `true` )
+
+### Load a configuration as Static class
+
+```ruby
+require 'konfig-yaml'
+
+KonfigYaml.setup do |config|
+  config.const_name = 'Config' # default is 'Settings'
+end
+
+p Config.log.level
+```
 
 ### Access the values
 
@@ -71,7 +83,7 @@ log_lv = config['log'].level
 
 ### Dynamically change settings
 
-Support only symbol or string
+Support only symbol or string key if adding new field
 
 ```ruby
 config[:port] = 80
