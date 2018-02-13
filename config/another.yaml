@@ -1,10 +1,10 @@
 default:
-  logger:
+  log:
     level: info
   short_env: default
 
 development:
-  logger:
+  log:
     level: debug
   short_env: dev
 
@@ -15,5 +15,5 @@ staging:
 
 production:
   short_env: prd
-  logger:
+  log:
     level: error
