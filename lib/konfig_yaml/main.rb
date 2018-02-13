@@ -41,7 +41,7 @@ class KonfigYaml
           if key == :const_name
             const_name = val
           elsif key == :name
-            args.push(val)
+            name = val
           else
             opts[key] = val
           end
