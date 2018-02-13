@@ -162,6 +162,31 @@ describe KonfigYaml do
     end
   end
 
+  describe '#setup' do
+    let!(:path) { File.expand_path("../fixtures", __FILE__) }
+
+    context 'without block' do
+      it 'defines Settings class' do
+        described_class.setup
+
+        expect(Settings.log.file).to eq('log/app.log')
+      end
+    end
+
+    context 'with block' do
+      it 'defines SettingsB class' do
+        described_class.setup do |config|
+          config.name = 'another'
+          config.path = path
+          config.const_name = 'SettingsB'
+        end
+
+        expect(SettingsB.log.level).to eq('debug')
+        expect(SettingsB.short_env).to eq('dev')
+      end
+    end
+  end
+
   describe 'merged configuraton' do
     subject { described_class.new('app', path: 'config', env: env) }
 
