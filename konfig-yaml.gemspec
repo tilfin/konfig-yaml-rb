@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/tilfin/konfig-yaml-rb"
   spec.license       = "MIT"
 
-  spec.files         = Dir['[A-Z]*[^~]'] + Dir['lib/**/*.rb'] + ['.gitignore', 'LICENSE']
+  spec.files         = Dir['lib/**/*.rb'] + ['README.md', 'LICENSE']
   spec.test_files    = Dir['spec/**/*']
   spec.require_paths = ["lib"]
 
