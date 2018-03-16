@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
 
   spec.files         = Dir['lib/**/*.rb'] + ['README.md', 'LICENSE']
-  spec.test_files    = Dir['spec/**/*']
+  spec.test_files    = Dir['spec/**/*'] + Dir['config/**/*']
   spec.require_paths = ["lib"]
 
   spec.add_dependency "neohash", "~> 0.2"
