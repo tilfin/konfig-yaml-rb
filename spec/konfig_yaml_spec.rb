@@ -120,72 +120,32 @@ describe KonfigYaml do
       end
     end
 
-    describe 'option use_cache' do
+    describe 'option erb' do
+      let!(:path) { File.expand_path("../fixtures", __FILE__) }
       let!(:pre_instance) { described_class.new }
 
-      before do
-        allow(described_class).to receive(:load_yaml).and_raise('load_yaml called')
-      end
-
       context 'not specified' do
-        subject { described_class.new }
+        subject { described_class.new('erb_config', path: path) }
 
-        it 'loads cached instance without calling load_yaml' do
-          expect{ subject }.not_to raise_error 'load_yaml called'
+        it 'loads without evaluating ERB' do
+          expect(subject.label).to eq '<%= 3 * 15 %>seconds'
         end
       end
 
       context 'true' do
-        subject { described_class.new(use_cache: true) }
+        subject { described_class.new('erb_config', path: path, erb: true) }
 
-        it 'loads cached instance without calling load_yaml' do
-          expect{ subject }.not_to raise_error 'load_yaml called'
-        end
-
-        context 'after cache cleared' do
-          before { described_class.clear }
-
-          it 'loads new instance with calling load_yaml' do
-            expect{ subject }.to raise_error 'load_yaml called'
-          end
+        it 'loads with evaluating ERB' do
+          expect(subject.label).to eq '45seconds'
         end
       end
 
       context 'false' do
-        subject { described_class.new(use_cache: false) }
+        subject { described_class.new('erb_config', path: path, erb: false) }
 
-        it 'loads new instance with calling load_yaml' do
-          expect{ subject }.to raise_error 'load_yaml called'
+        it 'loads without evaluating ERB' do
+          expect(subject.label).to eq '<%= 3 * 15 %>seconds'
         end
-      end
-    end
-  end
-
-  describe 'option erb' do
-    let!(:path) { File.expand_path("../fixtures", __FILE__) }
-    let!(:pre_instance) { described_class.new }
-
-    context 'not specified' do
-      subject { described_class.new('erb_config', use_cache: false, path: path) }
-
-      it 'loads cached instance without calling load_yaml' do
-        expect(subject.label).to eq '<%= 3 * 15 %>seconds'
-      end
-    end
-
-    context 'true' do
-      subject { described_class.new('erb_config', use_cache: false, path: path, erb: true) }
-
-      it 'loads cached instance without calling load_yaml' do
-        expect(subject.label).to eq '45seconds'
-      end
-    end
-
-    context 'false' do
-      subject { described_class.new('erb_config', use_cache: false, path: path, erb: false) }
-
-      it 'loads new instance with calling load_yaml' do
-        expect(subject.label).to eq '<%= 3 * 15 %>seconds'
       end
     end
   end
