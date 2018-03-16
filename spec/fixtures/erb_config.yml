@@ -1,0 +1,2 @@
+default:
+  label: <%= 3 * 15 %>seconds
