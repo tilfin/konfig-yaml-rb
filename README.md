@@ -45,7 +45,6 @@ config = KonfigYaml.new([name], [opts]);
   * `:path` config directory path resolved from the process current one ( default `config` )
   * `:erb` whether expand ERB or not ( default `false` )
   * `:env` Execution environment ( default **RUBY_ENV** value, **RAILS_ENV** value, **RACK_ENV** value, or `development` )
-  * `:use_cache` whether using cache ( default `true` )
 
 ### Load a configuration as Static class
 
@@ -95,14 +94,6 @@ p config.port         # 80
 p config.log.level    # "fatal"
 p config.backend.host # "cms.example.com"
 p config.backend.port # 7080
-```
-
-### Clear caches
-
-For testing purpose
-
-```
-KonfigYaml.clear
 ```
 
 ## Example
