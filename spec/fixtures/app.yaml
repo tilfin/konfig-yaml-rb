@@ -2,6 +2,10 @@ default:
   log:
     level: info
   short_env: default
+  array:
+    - foo
+    - field1: bar
+      field2: baz
 
 development:
   log:

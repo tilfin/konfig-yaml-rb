@@ -9,6 +9,12 @@ default:
     level: debug
   access_limits:
     - 127.0.0.1
+  entries:
+    - 0
+    - name: A
+      value: 1
+    - name: B
+      value: 2
 
 development: &dev
   root_url: http://localhost

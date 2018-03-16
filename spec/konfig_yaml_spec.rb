@@ -195,6 +195,11 @@ describe KonfigYaml do
         expect{ subject.cloud_access_key }.to raise_error(NoMethodError)
         expect(subject[:cloud_access_key]).to be_nil
         expect(subject.access_limits).to eq ['127.0.0.1']
+        expect(subject.entries[0]).to eq 0
+        expect(subject.entries[1].name).to eq 'A'
+        expect(subject.entries[1].value).to eq 1
+        expect(subject.entries[2].name).to eq 'B'
+        expect(subject.entries[2].value).to eq 2
       end
     end
 
