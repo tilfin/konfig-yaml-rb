@@ -11,6 +11,7 @@ class KonfigYaml
   # @param [String] name ('app') the basename of YAML file
   # @param [Hash] opts the options to intialize
   # @option opts [String] :env (ENV['RUBY_ENV'] || ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development') execution environment
+  # @option opts [Boolean] :erb (false) whether evaluate ERB or not
   # @option opts [String] :path ('config') directory path that contains the YAML file
   # @option opts [Boolean] :use_cache (true) whether cache settings or not
   def initialize(name = 'app', opts = nil)
@@ -20,6 +21,7 @@ class KonfigYaml
     elsif opts.nil?
       opts = {}
     end
+
     hash = self.class.create_hash(name, opts)
     set_inner_hash(hash)
   end
@@ -66,8 +68,9 @@ class KonfigYaml
       path = File.expand_path(opts[:path] || 'config', Dir.pwd)
       env = environment(opts)
       use_cache = opts.fetch(:use_cache, true)
+      expand_erb = opts.fetch(:erb, false)
 
-      h = load_config(name, env, path, use_cache)
+      h = load_config(name, env, path, use_cache, expand_erb)
       dup_hash_expand_envs(h)
     end
 
@@ -83,20 +86,24 @@ class KonfigYaml
       @cfg_cache ||= {}
     end
 
-    def load_config(name, env, path, use_cache)
+    def load_config(name, env, path, use_cache, expand_erb)
       cfg_key = "#{name}/#{env}"
       if use_cache && cfg_cache.key?(cfg_key)
         return cfg_cache[cfg_key]
       end
 
-      data = load_yaml(name, path)
+      data = load_yaml(name, path, expand_erb)
       cfg_cache[cfg_key] = convert_data_to_hash(data, env)
     end
 
-    def load_yaml(name, dir)
+    def load_yaml(name, dir, expand_erb)
       file_path = Dir.glob("#{dir}/#{name}.{yml,yaml}").first
       raise ArgumentError.new("Not found configuration yaml file") unless file_path
-      YAML.load(File.read(file_path))
+      str = File.read(file_path)
+      if expand_erb
+        str = ERB.new(str).result
+      end
+      YAML.load(str)
     end
 
     def convert_data_to_hash(data, env)

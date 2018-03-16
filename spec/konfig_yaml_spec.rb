@@ -121,7 +121,6 @@ describe KonfigYaml do
     end
 
     describe 'option use_cache' do
-      let!(:path) { File.expand_path("../fixtures", __FILE__) }
       let!(:pre_instance) { described_class.new }
 
       before do
@@ -158,6 +157,35 @@ describe KonfigYaml do
         it 'loads new instance with calling load_yaml' do
           expect{ subject }.to raise_error 'load_yaml called'
         end
+      end
+    end
+  end
+
+  describe 'option erb' do
+    let!(:path) { File.expand_path("../fixtures", __FILE__) }
+    let!(:pre_instance) { described_class.new }
+
+    context 'not specified' do
+      subject { described_class.new('erb_config', use_cache: false, path: path) }
+
+      it 'loads cached instance without calling load_yaml' do
+        expect(subject.label).to eq '<%= 3 * 15 %>seconds'
+      end
+    end
+
+    context 'true' do
+      subject { described_class.new('erb_config', use_cache: false, path: path, erb: true) }
+
+      it 'loads cached instance without calling load_yaml' do
+        expect(subject.label).to eq '45seconds'
+      end
+    end
+
+    context 'false' do
+      subject { described_class.new('erb_config', use_cache: false, path: path, erb: false) }
+
+      it 'loads new instance with calling load_yaml' do
+        expect(subject.label).to eq '<%= 3 * 15 %>seconds'
       end
     end
   end
